@@ -5,25 +5,137 @@ from mplsoccer import Pitch
 from data_loader import load_all_competitions, load_matches_for_season, load_match_events, load_match_lineups
 
 # --- PAGE SETUP & TITLE ---
-st.set_page_config(page_title="Passing Network Analysis", layout="wide")
+st.set_page_config(page_title="Tactical Insight Hub", layout="wide")
 
-# --- CUSTOM CSS ---
+# --- CUSTOM CSS (LIGHT THEME & STRICT MOBILE RESPONSIVENESS) ---
 custom_css = """
 <style>
+/* Reset i podstawy */
 header[data-testid="stHeader"] { display: none !important; }
-.block-container, [data-testid="stMainBlockContainer"] { padding-top: 5.5rem !important; padding-bottom: 1rem !important; }
+.block-container, [data-testid="stMainBlockContainer"] { padding-top: 5rem !important; padding-bottom: 1rem !important; }
+h1, h2, h3, h4, h5, h6, p, span, div, label { font-family: sans-serif; }
+
+/* Sticky Header */
 .fixed-match-header { position: fixed; top: 0; left: 0; width: 100vw; background-color: rgba(255, 255, 255, 0.98); backdrop-filter: blur(5px); z-index: 999999; border-bottom: 1px solid #e0e4ec; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); padding: 8px 0; }
 .fixed-header-content { max-width: 95%; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; }
 
-button[kind="secondary"] { background-color: transparent !important; border: none !important; box-shadow: none !important; color: rgba(150, 150, 150, 0.3) !important; margin-top: -20px !important; padding-bottom: 5px !important; }
-button[kind="secondary"] p { font-family: sans-serif; font-size: 0.85rem; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; transition: color 0.25s ease-in-out !important; }
-button[kind="secondary"]:hover { background-color: transparent !important; }
-button[kind="secondary"]:hover p { color: #b33c00 !important; }
-button[kind="secondary"]:focus:not(:active) { border-color: transparent !important; background-color: transparent !important; }
+/* Subtelne Przyciski (Analyze / Back) */
+button[kind="secondary"] { 
+    background-color: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    color: #b0b0b0 !important; 
+    font-size: 0.8rem !important; 
+    font-weight: 800 !important; 
+    letter-spacing: 2px !important; 
+    text-transform: uppercase !important; 
+    padding: 0 !important;
+}
+button[kind="secondary"]:hover { color: #ff6e40 !important; background-color: transparent !important; }
+.back-btn-container button { margin-top: -15px !important; margin-bottom: 10px !important; }
+
+/* Zbliżenie przycisku "Analyze" do karty meczu */
+[data-testid="stButton"] { margin-top: -5px; margin-bottom: 15px; text-align: center; }
 
 /* Legenda pod wykresami */
-.legend-box { background: #fdfdfd; padding: 10px 15px; border-radius: 4px; border: 1px solid #e0e4ec; font-size: 0.85rem; color: #555; margin-top: 10px; margin-bottom: 20px; text-align: center; font-family: sans-serif; }
+.legend-box { background: #fdfdfd; padding: 10px 15px; border-radius: 4px; border: 1px solid #e0e4ec; font-size: 0.85rem; color: #555; margin-top: 10px; margin-bottom: 20px; text-align: center; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
 .legend-box strong { color: #222; }
+
+/* --- STYLE KLAS HTML DLA KOMPONENTÓW --- */
+/* Klasyczny pasek meczowy (poziomy układ) */
+.classic-match-card { display: flex; align-items: center; justify-content: center; border-radius: 5px; }
+.mc-logo { flex: 1; text-align: center; }
+.mc-team-home { flex: 3; text-align: right; padding-right: 20px; }
+.mc-score { flex: 3; text-align: center; }
+.mc-team-away { flex: 3; text-align: left; padding-left: 20px; }
+
+.mc-team-home h4, .mc-team-away h4 { margin: 0; font-family: sans-serif; color: #222; font-size: 1.1rem; }
+.mc-score h3 { margin: 0; color: #ff4b4b; font-family: sans-serif; font-size: 1.5rem; font-weight: bold; }
+.mc-score small { color: #888; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 0.8rem; }
+
+.xi-container { background: #fff; border: 1px solid #e0e4ec; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+.xi-header { background: #f4f6f9; padding: 8px; text-align: center; font-weight: bold; color: #444; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid #e0e4ec; }
+.xi-row { display: flex; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f0f2f6; }
+.xi-num { width: 25px; font-weight: bold; color: #ff6e40; font-size: 0.9rem; }
+.xi-name { font-size: 0.85rem; color: #111; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.insight-container { background: #fff; border: 1px solid #e0e4ec; border-left: 4px solid #ff6e40; border-radius: 0 6px 6px 0; padding: 15px; margin-top: 10px; height: 100%; box-sizing: border-box;}
+.insight-header { margin: 0 0 10px 0; color: #111; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; }
+.insight-item { margin-bottom: 8px; font-size: 0.8rem; color: #444; }
+
+.ppda-container { background: #fff; border: 1px solid #e0e4ec; border-radius: 6px; padding: 15px; text-align: center; margin-top: 10px; height: 100%; box-sizing: border-box;}
+.ppda-header { background: #f4f6f9; padding: 8px; font-size: 0.75rem; font-weight: bold; color: #444; text-transform: uppercase; margin: -15px -15px 15px -15px; border-bottom: 1px solid #e0e4ec; }
+.ppda-val { font-size: 2rem; font-weight: 900; color: #111; font-family: monospace;}
+.ppda-desc { font-size: 0.65rem; color: #888; margin-bottom: 8px; text-transform: uppercase; }
+
+.zones-container { background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #e0e4ec; margin-bottom: 15px; }
+.zones-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #555; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.zones-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #eee; }
+
+.dossier-container { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e0e4ec; border-top: 3px solid #ff6e40; margin-top: 10px; }
+.dossier-title { margin-top: 0; color: #111; border-bottom: 1px solid #e0e4ec; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; font-weight: bold; margin-bottom: 15px; }
+.dossier-subtitle { color: #ff6e40; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: bold; }
+.dossier-text { font-size: 0.85rem; line-height: 1.5; color: #444; margin-top: 0; margin-bottom: 15px; }
+.dossier-strategy { background: rgba(255, 110, 64, 0.05); padding: 12px; border-left: 3px solid #ff6e40; border-radius: 0 4px 4px 0; }
+
+/* --- FLASHSCORE STYLE MOBILE VIEW --- */
+@media (max-width: 768px) {
+    /* 1. Odsunięcie treści żeby nagłówek jej nie przykrywał */
+    .block-container, [data-testid="stMainBlockContainer"] { padding-top: 6.5rem !important; }
+    
+    /* 2. Ukrycie zbędnych tekstów w Sticky Header */
+    .hide-mobile { display: none !important; }
+    .fixed-header-content { padding: 5px 0; gap: 10px; }
+    
+    /* 3. Kompresja kart meczowych bez łamania poziomego układu! Zamiast ucinać nazwy - zawińmy je. */
+    .classic-match-card { padding: 10px 0 !important; }
+    .mc-logo img { width: 22px !important; }
+    .mc-team-home { padding-right: 5px !important; }
+    .mc-team-away { padding-left: 5px !important; }
+    .mc-team-home h4, .mc-team-away h4 { 
+        font-size: 0.75rem !important; 
+        white-space: normal !important; 
+        overflow: visible !important; 
+        max-width: 100% !important; 
+        line-height: 1.2 !important; 
+    }
+    .mc-score h3 { font-size: 1.1rem !important; }
+    .mc-score small { font-size: 0.6rem !important; margin-bottom: 2px !important; }
+    
+    /* 4. Wymuszamy żeby kolumny Streamlita zachowywały się jak Grid 50/50 */
+    div[data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; gap: 0.5rem !important; }
+    div[data-testid="column"] { width: calc(50% - 0.25rem) !important; flex: 1 1 calc(50% - 0.25rem) !important; min-width: calc(50% - 0.25rem) !important; }
+    
+    /* Filtry na górze (3 kolumny) dostają po 33% */
+    div[data-testid="stHorizontalBlock"]:first-of-type div[data-testid="column"] { width: calc(33.33% - 0.5rem) !important; flex: 1 1 calc(33.33% - 0.5rem) !important; min-width: calc(33.33% - 0.5rem) !important; }
+    
+    /* 5. Kompresja komponentów HTML (żeby zmieściły się obok siebie w 50% szerokości) */
+    .xi-header { font-size: 0.6rem; padding: 4px; }
+    .xi-row { padding: 4px; }
+    .xi-num { font-size: 0.7rem; width: 18px; }
+    .xi-name { font-size: 0.65rem; }
+    
+    .insight-container { padding: 10px; }
+    .insight-header { font-size: 0.65rem; }
+    .insight-item { font-size: 0.6rem; margin-bottom: 4px; }
+    
+    .ppda-container { padding: 10px; }
+    .ppda-header { font-size: 0.6rem; padding: 4px; margin: -10px -10px 10px -10px; }
+    .ppda-val { font-size: 1.5rem; }
+    .ppda-desc { font-size: 0.55rem; }
+    
+    .zones-container { padding: 8px; }
+    .zones-header { font-size: 0.55rem; }
+    .zones-bar { height: 8px; }
+    
+    .dossier-container { padding: 10px; }
+    .dossier-title { font-size: 0.8rem; padding-bottom: 5px; margin-bottom: 10px; }
+    .dossier-subtitle { font-size: 0.65rem; }
+    .dossier-text { font-size: 0.65rem; margin-bottom: 10px; }
+    .dossier-strategy { padding: 8px; }
+    
+    .legend-box { font-size: 0.55rem; padding: 8px; }
+}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -38,7 +150,7 @@ logo_dict = {
     "Villarreal": "https://images.fotmob.com/image_resources/logo/teamlogo/10205.png",
     "Real Betis": "https://images.fotmob.com/image_resources/logo/teamlogo/8603.png",
     "Athletic Club": "https://images.fotmob.com/image_resources/logo/teamlogo/8315.png",
-   "Celta Vigo": "https://images.fotmob.com/image_resources/logo/teamlogo/9910.png",
+    "Celta Vigo": "https://images.fotmob.com/image_resources/logo/teamlogo/9910.png",
     "Valencia": "https://images.fotmob.com/image_resources/logo/teamlogo/10267.png",
     "Osasuna": "https://images.fotmob.com/image_resources/logo/teamlogo/9783.png",
     "Getafe": "https://images.fotmob.com/image_resources/logo/teamlogo/8305.png",
@@ -202,10 +314,12 @@ def get_starting_xi_list(df_events, lineup_df, team_name):
         return []
 
 def generate_xi_html(starters):
-    html = "<div style='max-width: 350px; margin: 15px auto; font-family: sans-serif; background: #ffffff; border: 1px solid #e0e4ec; border-radius: 8px; overflow: hidden;'>"
-    html += "<div style='background-color: #f4f6f9; padding: 12px; border-bottom: 1px solid #e0e4ec; text-align: center; font-weight: bold; color: #444; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;'>Starting XI</div>"
+    html = """
+    <div class="xi-container">
+        <div class="xi-header">Starting XI</div>
+    """
     for s in starters:
-        html += f"<div style='display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #f0f2f6;'><div style='width: 40px; font-weight: bold; color: #ff6e40; font-size: 1.1rem; text-align: left;'>{s['number']}</div><div style='font-size: 1rem; color: #111; font-weight: 500;'>{s['name']}</div></div>"
+        html += f"<div class='xi-row'><div class='xi-num'>{s['number']}</div><div class='xi-name'>{s['name']}</div></div>"
     html += "</div>"
     return html
 
@@ -229,15 +343,13 @@ def get_key_insights_html(df_events, team_name, lineup_df):
         top_pair_count = pairs.iloc[0]
         
         html = f"""
-<div style='max-width: 350px; margin: 10px auto 30px auto; background-color: #ffffff; border-left: 4px solid #ff6e40; border-top: 1px solid #e0e4ec; border-right: 1px solid #e0e4ec; border-bottom: 1px solid #e0e4ec; border-radius: 0 8px 8px 0; padding: 15px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);'>
-<h5 style='margin-top: 0; margin-bottom: 12px; color: #111; font-family: sans-serif; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;'>Tactical Insights <span style="font-size: 0.7rem; color: #888; text-transform: none;">(Full Match)</span></h5>
-<div style='color: #444; font-family: sans-serif; font-size: 0.85rem; line-height: 1.6;'>
-<div style='margin-bottom: 8px;'><strong>Main Hub:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_passer}</span> ({top_passer_count} passes) <br><em style='color: #888; font-size: 0.75rem;'>Target for man-marking.</em></div>
-<div style='margin-bottom: 8px;'><strong>Primary Outlet:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_recipient}</span> ({top_recipient_count} received) <br><em style='color: #888; font-size: 0.75rem;'>Key progression target.</em></div>
-<div><strong>Strongest Link:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_pair[0]} ➔ {top_pair[1]}</span> ({top_pair_count} times) <br><em style='color: #888; font-size: 0.75rem;'>Prime pressing trigger.</em></div>
-</div>
-</div>
-"""
+        <div class="insight-container">
+            <div class="insight-header">Tactical Insights <span style="font-size: 0.7rem; color: #888; text-transform: none;">(Full Match)</span></div>
+            <div class="insight-item"><strong>Main Hub:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_passer}</span> ({top_passer_count} passes) <br><em style='color: #888; font-size: 0.75rem;'>Target for man-marking.</em></div>
+            <div class="insight-item"><strong>Primary Outlet:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_recipient}</span> ({top_recipient_count} received) <br><em style='color: #888; font-size: 0.75rem;'>Key progression target.</em></div>
+            <div class="insight-item"><strong>Strongest Link:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_pair[0]} ➔ {top_pair[1]}</span> ({top_pair_count} times) <br><em style='color: #888; font-size: 0.75rem;'>Prime pressing trigger.</em></div>
+        </div>
+        """
         return html
     except Exception as e:
         return ""
@@ -289,19 +401,19 @@ def get_action_zones_html(df_events, team_name):
     p_att = 100 - p_def - p_mid
     
     html = f"""
-<div style="margin-bottom: 15px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #e0e4ec;">
-<div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 8px; font-family: sans-serif;">
-<span>Own Third ({p_def}%)</span>
-<span>Midfield ({p_mid}%)</span>
-<span>Final Third ({p_att}%)</span>
-</div>
-<div style="display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: #eee;">
-<div style="width: {p_def}%; background: #95a5a6; display: flex; align-items: center; justify-content: center;"></div>
-<div style="width: {p_mid}%; background: #bdc3c7; display: flex; align-items: center; justify-content: center;"></div>
-<div style="width: {p_att}%; background: #ff6e40; display: flex; align-items: center; justify-content: center;"></div>
-</div>
-</div>
-"""
+    <div class="zones-container">
+        <div class="zones-header">
+            <span>Own Third ({p_def}%)</span>
+            <span>Midfield ({p_mid}%)</span>
+            <span>Final Third ({p_att}%)</span>
+        </div>
+        <div class="zones-bar">
+            <div style="width: {p_def}%; background: #95a5a6; display: flex; align-items: center; justify-content: center;"></div>
+            <div style="width: {p_mid}%; background: #bdc3c7; display: flex; align-items: center; justify-content: center;"></div>
+            <div style="width: {p_att}%; background: #ff6e40; display: flex; align-items: center; justify-content: center;"></div>
+        </div>
+    </div>
+    """
     return html
 
 def draw_defensive_actions_map(df_events, team_name):
@@ -344,15 +456,13 @@ def get_ppda_html(df_events, team_name, opponent_name):
             color = "#95a5a6"
             
         html = f"""
-<div style='max-width: 350px; margin: 15px auto; font-family: sans-serif; background: #ffffff; border: 1px solid #e0e4ec; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.02);'>
-<div style='background-color: #f4f6f9; padding: 10px; border-bottom: 1px solid #e0e4ec; text-align: center; font-weight: bold; color: #444; font-size: 0.85rem; text-transform: uppercase;'>PPDA Pressing Intensity</div>
-<div style='padding: 15px; text-align: center;'>
-<div style='font-size: 2.2rem; font-weight: 800; color: #111; margin-bottom: 2px;'>{ppda_value}</div>
-<div style='font-size: 0.75rem; color: #888; margin-bottom: 8px;'>Opponent passes allowed per defensive action</div>
-<span style='background: {color}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;'>{status}</span>
-</div>
-</div>
-"""
+        <div class="ppda-container">
+            <div class="ppda-header">PPDA Pressing Intensity</div>
+            <div class="ppda-val">{ppda_value}</div>
+            <div class="ppda-desc">Opponent passes allowed per defensive action</div>
+            <span style='background: {color}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;'>{status}</span>
+        </div>
+        """
         return html
     except:
         return ""
@@ -417,24 +527,18 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
             para3 = f"The optimal counter-strategy involves isolating <strong>{top_passer}</strong> out of the game while heavily shifting the defensive shape to cover the <strong>{wing}</strong>. Pressing triggers should be activated immediately whenever the ball enters <strong>{vul_zone}</strong>."
 
         html = f"""
-<div style="background: #181a1f; color: #f4f6f9; padding: 25px; border-radius: 10px; margin-top: 10px; border-top: 4px solid #ff6e40; box-shadow: 0 8px 16px rgba(0,0,0,0.15); font-family: sans-serif;">
-<h3 style="margin-top: 0; color: #ffffff; border-bottom: 1px solid #333; padding-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-size: 1.15rem;">Post-Match Tactical Dossier</h3>
-<h5 style="color: #ff6e40; margin-top: 15px; margin-bottom: 5px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">1. In Possession (Build-up & Attack)</h5>
-<p style="font-size: 0.9rem; line-height: 1.6; color: #b9c1cb; margin-top: 0;">
-{para1}
-</p>
-<h5 style="color: #ff6e40; margin-top: 15px; margin-bottom: 5px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">2. Out of Possession (Defensive Shape)</h5>
-<p style="font-size: 0.9rem; line-height: 1.6; color: #b9c1cb; margin-top: 0;">
-{para2}
-</p>
-<div style="background: rgba(255, 110, 64, 0.1); padding: 15px; border-left: 3px solid #ff6e40; margin-top: 20px; border-radius: 0 4px 4px 0;">
-<h5 style="color: #ff6e40; margin-top: 0; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Exploitation Strategy</h5>
-<p style="font-size: 0.9rem; line-height: 1.5; color: #ffffff; margin-bottom: 0; font-weight: 500;">
-{para3}
-</p>
-</div>
-</div>
-"""
+        <div class="dossier-container">
+            <div class="dossier-title">Post-Match Tactical Dossier</div>
+            <div class="dossier-subtitle">1. In Possession (Build-up & Attack)</div>
+            <p class="dossier-text">{para1}</p>
+            <div class="dossier-subtitle">2. Out of Possession (Defensive Shape)</div>
+            <p class="dossier-text">{para2}</p>
+            <div class="dossier-strategy">
+                <div class="dossier-subtitle" style="color: #ff6e40; margin-bottom: 8px;">Exploitation Strategy</div>
+                <p class="dossier-text" style="color: #111; font-weight: 500; margin-bottom: 0;">{para3}</p>
+            </div>
+        </div>
+        """
         return html
     except Exception as e:
         return ""
@@ -457,7 +561,7 @@ if "comp_id" in st.query_params:
 
 if "match_id" not in st.query_params:
 
-    st.title("Breaking the System: Passing Network Analysis")
+    st.title("Tactical Insight Hub")
     st.markdown("**Audience POV:** Coaching staff looking to optimize pressing triggers to disrupt the opponent's ball progression.")
     st.divider()
 
@@ -495,16 +599,21 @@ if "match_id" not in st.query_params:
     df_matches = load_matches_for_season(c_id, s_id)
 
     with col3:
-        all_teams = sorted(list(set(df_matches['home_team']).union(set(df_matches['away_team']))))
+        all_teams = ["All Teams"] + sorted(list(set(df_matches['home_team']).union(set(df_matches['away_team']))))
         default_team_idx = 0
         if saved_team and saved_team in all_teams:
             default_team_idx = all_teams.index(saved_team)
         selected_team = st.selectbox("Select team (Opponent):", all_teams, index=default_team_idx)
 
     st.divider()
-    st.subheader(f"Matches for {selected_team} in the {selected_season} season")
     
-    team_matches = df_matches[(df_matches['home_team'] == selected_team) | (df_matches['away_team'] == selected_team)]
+    if selected_team == "All Teams":
+        st.subheader(f"All matches in the {selected_season} season")
+        team_matches = df_matches
+    else:
+        st.subheader(f"Matches for {selected_team} in the {selected_season} season")
+        team_matches = df_matches[(df_matches['home_team'] == selected_team) | (df_matches['away_team'] == selected_team)]
+        
     display_df = team_matches.sort_values('match_date').drop_duplicates(subset=['match_id']).reset_index(drop=True)
     
     for index, row in display_df.iterrows():
@@ -525,20 +634,21 @@ if "match_id" not in st.query_params:
             home_color = blue; away_color = blue
 
         card_html = f"""
-    <div style="display: flex; align-items: center; justify-content: center; background: linear-gradient(90deg, {home_color} 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, {away_color} 100%); padding: 15px 0; border-radius: 5px;">
-        <div style="flex: 1; text-align: center;"><img src="{home_logo_url}" width="45"></div>
-        <div style="flex: 3; text-align: right; padding-right: 20px;"><h4 style="margin: 0; font-family: sans-serif;">{row['home_team']}</h4></div>
-        <div style="flex: 3; text-align: center;">
-            <small style="color: gray; display: block; margin-bottom: 5px; font-family: sans-serif;">{formatted_date}</small>
-            <h3 style="margin: 0; color: #FF4B4B; font-family: sans-serif;">{row['home_score']} : {row['away_score']}</h3>
+        <div class="classic-match-card" style="background: linear-gradient(90deg, {home_color} 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, {away_color} 100%); padding: 15px 0;">
+            <div class="mc-logo"><img src="{home_logo_url}" width="45"></div>
+            <div class="mc-team-home"><h4>{row['home_team']}</h4></div>
+            <div class="mc-score">
+                <small>{formatted_date}</small>
+                <h3>{row['home_score']} : {row['away_score']}</h3>
+            </div>
+            <div class="mc-team-away"><h4>{row['away_team']}</h4></div>
+            <div class="mc-logo"><img src="{away_logo_url}" width="45"></div>
         </div>
-        <div style="flex: 3; text-align: left; padding-left: 20px;"><h4 style="margin: 0; font-family: sans-serif;">{row['away_team']}</h4></div>
-        <div style="flex: 1; text-align: center;"><img src="{away_logo_url}" width="45"></div>
-    </div>
-    """
+        """
+        
         with st.container(border=True):
             st.markdown(card_html, unsafe_allow_html=True)
-            if st.button("Analyze", key=f"btn_{row['match_id']}", use_container_width=True):
+            if st.button("Analyze", key=f"btn_{row['match_id']}", use_container_width=True, type="secondary"):
                 st.query_params["comp_id"] = str(c_id)
                 st.query_params["season_id"] = str(s_id)
                 st.query_params["team"] = selected_team
@@ -563,13 +673,13 @@ else:
     header_html = f"""
     <div class="fixed-match-header">
         <div class="fixed-header-content">
-            <div style="flex: 1; text-align: right;">
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 1.35rem; font-weight: 600; color: #111111;">{match['home_team']}</h3>
+            <div class="team-block" style="flex: 1; text-align: right; display: flex; justify-content: flex-end;">
+                <h3 class="hide-mobile" style="margin: 0; font-family: sans-serif; font-size: 1.35rem; font-weight: 600; color: #111111;">{match['home_team']}</h3>
             </div>
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <img src="{home_logo}" width="38" style="vertical-align: middle;">
-                    <span style="font-size: 1.5rem; font-weight: bold; color: #FF4B4B; background: #f4f6f9; padding: 4px 14px; border-radius: 4px; font-family: monospace;">
+                    <span style="font-size: 1.5rem; font-weight: bold; color: #FF4B4B; background: #f4f6f9; padding: 4px 14px; border-radius: 4px; font-family: monospace; border: 1px solid #e0e4ec;">
                         {match['home_score']} : {match['away_score']}
                     </span>
                     <img src="{away_logo}" width="38" style="vertical-align: middle;">
@@ -578,13 +688,19 @@ else:
                     <small style="color: #888888; font-family: sans-serif; font-size: 0.75rem;">{date_obj.strftime('%d.%m.%Y')} | ID: {match['match_id']}</small>
                 </div>
             </div>
-            <div style="flex: 1; text-align: left;">
-                <h3 style="margin: 0; font-family: sans-serif; font-size: 1.35rem; font-weight: 600; color: #111111;">{match['away_team']}</h3>
+            <div class="team-block" style="flex: 1; text-align: left; display: flex; justify-content: flex-start;">
+                <h3 class="hide-mobile" style="margin: 0; font-family: sans-serif; font-size: 1.35rem; font-weight: 600; color: #111111;">{match['away_team']}</h3>
             </div>
         </div>
     </div>
     """
     st.markdown(header_html, unsafe_allow_html=True)
+
+    st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
+    if st.button("← Back to Match List", type="secondary"):
+        st.query_params.clear()
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
     with st.spinner("Extracting match events & computing tactical metrics..."):
         df_events = load_match_events(m_id)
@@ -605,31 +721,39 @@ else:
         st.markdown(get_action_zones_html(df_events, match['away_team']), unsafe_allow_html=True)
 
     # ---------------------------------------------------------------------
-    # ROW 1: PASSING NETWORKS
+    # ROW 1: PASSING NETWORKS (ROZBITE NA WARSTWY DLA MOBILE)
     # ---------------------------------------------------------------------
     st.subheader("1. Passing Networks (Starting XI)")
     st.markdown("Networks represent successful passes made before the first substitution to ensure tactical accuracy (Minimum 3 passes between players).")
     
+    # Warstwa 1: Same boiska
     col_pass1, col_pass2 = st.columns(2)
     with col_pass1:
         fig_home = draw_passing_network(df_events, match['home_team'], home_lineup, min_passes=3)
-        if fig_home:
-            st.pyplot(fig_home, use_container_width=True)
-            starters_home = get_starting_xi_list(df_events, home_lineup, match['home_team'])
-            st.markdown(generate_xi_html(starters_home), unsafe_allow_html=True)
-            st.markdown(get_key_insights_html(df_events, match['home_team'], home_lineup), unsafe_allow_html=True)
-        else:
-            st.warning("Insufficient passing data for this team.")
-            
+        if fig_home: st.pyplot(fig_home, use_container_width=True)
+        else: st.warning("Insufficient passing data for this team.")
     with col_pass2:
         fig_away = draw_passing_network(df_events, match['away_team'], away_lineup, min_passes=3)
+        if fig_away: st.pyplot(fig_away, use_container_width=True)
+        else: st.warning("Insufficient passing data for this team.")
+        
+    # Warstwa 2: Same Jedenastki
+    col_xi1, col_xi2 = st.columns(2)
+    with col_xi1:
+        if fig_home: 
+            starters_home = get_starting_xi_list(df_events, home_lineup, match['home_team'])
+            st.markdown(generate_xi_html(starters_home), unsafe_allow_html=True)
+    with col_xi2:
         if fig_away:
-            st.pyplot(fig_away, use_container_width=True)
             starters_away = get_starting_xi_list(df_events, away_lineup, match['away_team'])
             st.markdown(generate_xi_html(starters_away), unsafe_allow_html=True)
-            st.markdown(get_key_insights_html(df_events, match['away_team'], away_lineup), unsafe_allow_html=True)
-        else:
-            st.warning("Insufficient passing data for this team.")
+
+    # Warstwa 3: Same Wnioski
+    col_ins1, col_ins2 = st.columns(2)
+    with col_ins1:
+        if fig_home: st.markdown(get_key_insights_html(df_events, match['home_team'], home_lineup), unsafe_allow_html=True)
+    with col_ins2:
+        if fig_away: st.markdown(get_key_insights_html(df_events, match['away_team'], away_lineup), unsafe_allow_html=True)
 
     st.divider()
 
@@ -722,10 +846,8 @@ else:
     
     col_dos1, col_dos2 = st.columns(2)
     with col_dos1:
-        # Przekazujemy explicite template_idx=0
         st.markdown(get_tactical_dossier_html(df_events, match['home_team'], match['away_team'], home_lineup, 0), unsafe_allow_html=True)
     with col_dos2:
-        # Przekazujemy explicite template_idx=1
         st.markdown(get_tactical_dossier_html(df_events, match['away_team'], match['home_team'], away_lineup, 1), unsafe_allow_html=True)
 
     st.divider()
