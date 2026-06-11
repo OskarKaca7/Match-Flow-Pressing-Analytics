@@ -560,6 +560,7 @@ if "match_id" not in st.query_params:
 
     st.title("Tactical Insight Hub")
     st.markdown("**Audience POV:** Coaching staff looking to optimize pressing triggers to disrupt the opponent's ball progression.")
+    st.markdown("**Working Hypothesis:** Every opponent exhibits specific, repetitive spatial vulnerabilities under pressure that can be identified through event data and exploited tactically.")
     st.divider()
 
     with st.spinner("Loading StatsBomb database..."):
