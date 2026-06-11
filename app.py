@@ -7,22 +7,17 @@ from data_loader import load_all_competitions, load_matches_for_season, load_mat
 # --- PAGE SETUP & TITLE ---
 st.set_page_config(page_title="Tactical Insight Hub", layout="wide")
 
-# --- CUSTOM CSS (LIGHT THEME & STRICT MOBILE RESPONSIVENESS) ---
+# --- CUSTOM CSS (LIGHT THEME, FIX TOOLBARS & STRICT MOBILE 50/50 GRID) ---
 custom_css = """
 <style>
-/* ------------------------------------------------------------------- */
-/* 1. ŻELAZNA BLOKADA PRZEWIJANIA W POZIOMIE (CRITICAL FIX)            */
-/* ------------------------------------------------------------------- */
-html, body, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"] {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-}
-
-* {
-    box-sizing: border-box !important;
-}
+/* UKRYWANIE PASKÓW STREAMLITA (TEN DZIWNY ZNACZEK "streamlitApp") */
+[data-testid="stElementToolbar"], 
+[data-testid="stElementActions"], 
+.st-emotion-cache-1vt4ygl { display: none !important; }
 
 /* Reset i podstawy */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stMainBlockContainer"] { overflow-x: hidden !important; max-width: 100vw !important; }
+* { box-sizing: border-box !important; }
 header[data-testid="stHeader"] { display: none !important; }
 .block-container, [data-testid="stMainBlockContainer"] { padding-top: 5rem !important; padding-bottom: 1rem !important; }
 h1, h2, h3, h4, h5, h6, p, span, div, label { font-family: sans-serif; }
@@ -32,50 +27,33 @@ h1, h2, h3, h4, h5, h6, p, span, div, label { font-family: sans-serif; }
 .fixed-header-content { max-width: 95%; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; }
 
 /* Subtelne Przyciski (Analyze / Back) */
-button[kind="secondary"] { 
-    background-color: transparent !important; 
-    border: none !important; 
-    box-shadow: none !important; 
-    color: #888888 !important; 
-    font-size: 0.8rem !important; 
-    font-weight: 800 !important; 
-    letter-spacing: 2px !important; 
-    text-transform: uppercase !important; 
-    padding: 0 !important;
-}
+button[kind="secondary"] { background-color: transparent !important; border: none !important; box-shadow: none !important; color: #888888 !important; font-size: 0.8rem !important; font-weight: 800 !important; letter-spacing: 2px !important; text-transform: uppercase !important; padding: 0 !important; }
 button[kind="secondary"]:hover { color: #ff6e40 !important; background-color: transparent !important; }
 .back-btn-container button { margin-top: -15px !important; margin-bottom: 10px !important; }
-
-/* Zbliżenie przycisku "Analyze" do karty meczu */
 [data-testid="stButton"] { margin-top: -5px; margin-bottom: 15px; text-align: center; }
 
 /* Legenda pod wykresami */
-.legend-box { background: #fdfdfd; padding: 10px 15px; border-radius: 4px; border: 1px solid #e0e4ec; font-size: 0.85rem; color: #555; margin-top: 10px; margin-bottom: 20px; text-align: center; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;}
+.legend-box { background: #fdfdfd; padding: 10px 15px; border-radius: 4px; border: 1px solid #e0e4ec; font-size: 0.85rem; color: #555; margin-top: 10px; margin-bottom: 20px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;}
 .legend-box strong { color: #222; }
 
-/* --- STYLE KLAS HTML DLA KOMPONENTÓW --- */
+/* --- KLASYCZNY PASEK MECZOWY --- */
 .classic-match-card { display: flex; align-items: center; justify-content: space-between; border-radius: 5px; padding: 15px; border: 1px solid #e0e4ec; margin-bottom: 10px; width: 100%; }
 .mc-logo { width: 45px; flex-shrink: 0; text-align: center; }
 .mc-logo img { width: 100%; height: auto; }
 .mc-team-home { flex: 1; text-align: right; padding-right: 15px; overflow: hidden; }
 .mc-team-away { flex: 1; text-align: left; padding-left: 15px; overflow: hidden; }
 .mc-score { width: 90px; flex-shrink: 0; text-align: center; }
-
-.mc-team-home h4, .mc-team-away h4 { margin: 0; font-family: sans-serif; color: #222; font-size: 1.1rem; }
-.mc-score h3 { margin: 0; color: #ff4b4b; font-family: sans-serif; font-size: 1.5rem; font-weight: bold; }
-.mc-score small { color: #888; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 0.8rem; }
-
+.mc-team-home h4, .mc-team-away h4 { margin: 0; color: #222; font-size: 1.1rem; }
+.mc-score h3 { margin: 0; color: #ff4b4b; font-size: 1.5rem; font-weight: bold; }
+.mc-score small { color: #888; display: block; margin-bottom: 5px; font-size: 0.8rem; }
 .team-name-header { text-align: center; color: #111; margin-top: 0; margin-bottom: 8px; font-size: 1.2rem; width: 100%;}
 
+/* --- KOMPONENTY HTML --- */
 .xi-container { background: #fff; border: 1px solid #e0e4ec; border-radius: 6px; overflow: hidden; margin-top: 10px; width: 100%; }
 .xi-header { background: #f4f6f9; padding: 8px; text-align: center; font-weight: bold; color: #444; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid #e0e4ec; }
 .xi-row { display: flex; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f0f2f6; }
 .xi-num { width: 25px; font-weight: bold; color: #ff6e40; font-size: 0.9rem; flex-shrink: 0; }
 .xi-name { font-size: 0.85rem; color: #111; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.insight-container { background: #fff; border: 1px solid #e0e4ec; border-left: 4px solid #ff6e40; border-radius: 0 6px 6px 0; padding: 15px; margin-top: 10px; height: 100%; width: 100%; }
-.insight-header { margin: 0 0 10px 0; color: #111; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; }
-.insight-item { margin-bottom: 8px; font-size: 0.8rem; color: #444; }
 
 .ppda-container { background: #fff; border: 1px solid #e0e4ec; border-radius: 6px; padding: 15px; text-align: center; margin-top: 10px; height: 100%; width: 100%; }
 .ppda-header { background: #f4f6f9; padding: 8px; font-size: 0.75rem; font-weight: bold; color: #444; text-transform: uppercase; margin: -15px -15px 15px -15px; border-bottom: 1px solid #e0e4ec; }
@@ -86,79 +64,61 @@ button[kind="secondary"]:hover { color: #ff6e40 !important; background-color: tr
 .zones-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #555; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 .zones-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #eee; }
 
-.dossier-container { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e0e4ec; border-top: 3px solid #ff6e40; margin-top: 10px; width: 100%; }
-.dossier-title { margin-top: 0; color: #111; border-bottom: 1px solid #e0e4ec; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; font-weight: bold; margin-bottom: 15px; }
-.dossier-subtitle { color: #ff6e40; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: bold; }
-.dossier-text { font-size: 0.85rem; line-height: 1.5; color: #444; margin-top: 0; margin-bottom: 15px; }
-.dossier-strategy { background: rgba(255, 110, 64, 0.05); padding: 12px; border-left: 3px solid #ff6e40; border-radius: 0 4px 4px 0; }
-
 /* ------------------------------------------------------------------- */
-/* 2. PANCERNA, INTELIGENTNA SIATKA NA TELEFONY (Smart Grid)           */
+/* BEZWZGLĘDNA SIATKA DLA TELEFONÓW - BLOKADA ŁAMANIA KOLUMN W CHMURZE */
 /* ------------------------------------------------------------------- */
 @media (max-width: 768px) {
-    /* Odsunięcie treści żeby nagłówek jej nie przykrywał */
+    /* 1. Margines zeby tekst nie wchodził pod header */
     .block-container, [data-testid="stMainBlockContainer"] { padding-top: 6.5rem !important; padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
-    
-    /* Ukrycie tekstów w Sticky Header, zostaje samo [Logo] Wynik [Logo] */
     .hide-mobile { display: none !important; }
     .fixed-header-content { padding: 5px 0; gap: 10px; }
     
-    /* Bezpieczne skalowanie obrazów (Wykresów z matplotlib) */
+    /* 2. Brutalne wymuszenie układu GRID 50/50 na kolumnach Streamlita */
+    div[data-testid="stHorizontalBlock"] { 
+        flex-direction: row !important; 
+        flex-wrap: wrap !important; 
+        display: flex !important;
+        gap: 0px !important;
+    }
+    
+    /* Wszystkie kolumny w raporcie zmuszone na 50% szerokości */
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: 50% !important; 
+        flex: 0 0 50% !important; 
+        min-width: 50% !important; 
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+    }
+
+    /* WYJĄTEK: Pierwszy blok to filtry ligowe - one mają być na 100% żeby dalo sie w nie kliknąć */
+    div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"] {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        min-width: 100% !important;
+        padding: 0 !important;
+    }
+    
+    /* Zabezpieczenie boisk z Matplotlib */
     [data-testid="stImage"] img, .element-container img { max-width: 100% !important; height: auto !important; }
 
-    /* Wymuszamy żeby główny kontener kolumn miał flexboxa z opcją zawijania */
-    div[data-testid="stHorizontalBlock"] { 
-        flex-wrap: wrap !important; 
-        gap: 2% !important; /* Minimalny, bezpieczny odstęp zamiast pikseli */
-    }
-    
-    /* LOGIKA A: Jeśli w bloku są 3 kolumny (Menu Filtrów) -> Układają się pionowo na 100% */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(3)),
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child:nth-last-child(3),
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child:nth-last-child(3) ~ div[data-testid="column"] {
-        width: 100% !important; 
-        flex: 1 1 100% !important; 
-        min-width: 100% !important; 
-        margin-bottom: 10px !important;
-    }
-    
-    /* LOGIKA B: Jeśli w bloku są 2 kolumny (Taktyka, Boiska) -> Są obok siebie po 49% */
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child:nth-last-child(2),
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child:nth-last-child(2) ~ div[data-testid="column"] {
-        width: 49% !important; 
-        flex: 1 1 49% !important; 
-        min-width: 0 !important; /* CRITICAL: Pozwala na kurczenie się poniżej zawartości */
-        margin-bottom: 5px !important;
-    }
-    
-    /* Kompresja kart meczowych (zostają poziome, bez ucinania) */
+    /* Pasek meczowy na mobile */
     .classic-match-card { padding: 10px 5px !important; gap: 2px !important; }
     .mc-logo { width: 25px !important; }
     .mc-team-home { padding-right: 5px !important; }
     .mc-team-away { padding-left: 5px !important; }
-    .mc-team-home h4, .mc-team-away h4 { 
-        font-size: 0.75rem !important; 
-        white-space: normal !important; 
-        word-wrap: break-word !important; 
-        line-height: 1.2 !important; 
-    }
+    .mc-team-home h4, .mc-team-away h4 { font-size: 0.75rem !important; white-space: normal !important; line-height: 1.2 !important; }
     .mc-score { width: 65px !important; }
     .mc-score h3 { font-size: 1.05rem !important; white-space: nowrap; }
     .mc-score small { font-size: 0.55rem !important; margin-bottom: 2px !important; }
     
-    /* Zmniejszenie głównych nagłówków sekcji Streamlita */
     h3 { font-size: 1.1rem !important; }
     .team-name-header { font-size: 0.85rem !important; margin-bottom: 5px !important; }
     
-    /* Kompresja komponentów HTML dla wąskich kolumn (49% na telefonie) */
+    /* Elementy HTML dopasowane do wąskich, 50% kolumn */
     .xi-header { font-size: 0.6rem; padding: 4px; }
     .xi-row { padding: 4px; }
     .xi-num { font-size: 0.6rem; width: 15px; }
     .xi-name { font-size: 0.55rem; }
-    
-    .insight-container { padding: 8px; }
-    .insight-header { font-size: 0.6rem; margin-bottom: 5px; }
-    .insight-item { font-size: 0.55rem; margin-bottom: 4px; line-height: 1.2; }
     
     .ppda-container { padding: 8px; }
     .ppda-header { font-size: 0.55rem; padding: 4px; margin: -8px -8px 8px -8px; }
@@ -168,13 +128,6 @@ button[kind="secondary"]:hover { color: #ff6e40 !important; background-color: tr
     .zones-container { padding: 8px; }
     .zones-header { font-size: 0.55rem; flex-direction: column; text-align: center; gap: 2px;}
     .zones-bar { height: 6px; }
-    
-    .dossier-container { padding: 10px; }
-    .dossier-title { font-size: 0.8rem; padding-bottom: 5px; margin-bottom: 8px; }
-    .dossier-subtitle { font-size: 0.6rem; }
-    .dossier-text { font-size: 0.65rem; margin-bottom: 8px; line-height: 1.3; }
-    .dossier-strategy { padding: 8px; }
-    
     .legend-box { font-size: 0.55rem; padding: 6px; }
 }
 </style>
@@ -284,10 +237,8 @@ def clean_name(name):
     if len(parts) == 1: return parts[0]
     if len(parts) == 2: return parts[1]
     particles = ['de', 'van', 'der', 'ter', 'da', 'dos', 'di', 'mac', 'mc']
-    if parts[-2].lower() in particles:
-        return f"{parts[-2]} {parts[-1]}"
-    if len(parts) >= 3 and parts[-3].lower() in particles:
-        return f"{parts[-3]} {parts[-2]} {parts[-1]}"
+    if parts[-2].lower() in particles: return f"{parts[-2]} {parts[-1]}"
+    if len(parts) >= 3 and parts[-3].lower() in particles: return f"{parts[-3]} {parts[-2]} {parts[-1]}"
     return parts[-2]
 
 def get_display_name_mapping(lineup_df):
@@ -296,32 +247,25 @@ def get_display_name_mapping(lineup_df):
         raw_name = row['player_name']
         if 'player_nickname' in row and pd.notna(row['player_nickname']):
             mapping[raw_name] = row['player_nickname']
-        else:
-            mapping[raw_name] = clean_name(raw_name)
+        else: mapping[raw_name] = clean_name(raw_name)
     return mapping
 
 def draw_passing_network(df_events, team_name, lineup_df, min_passes=3):
     name_mapping = get_display_name_mapping(lineup_df)
     subs = df_events[(df_events['type'] == 'Substitution') & (df_events['team'] == team_name)]
     first_sub_min = subs['minute'].min() if not subs.empty else 120
-    
     passes = df_events[(df_events['type'] == 'Pass') & (df_events['team'] == team_name) & (df_events['minute'] < first_sub_min)].copy()
     passes = passes[passes['pass_outcome'].isna()] 
     if passes.empty: return None
-        
     passes[['x', 'y']] = pd.DataFrame(passes['location'].tolist(), index=passes.index)
     passes['player_name'] = passes['player'].map(name_mapping).fillna(passes['player'].apply(clean_name))
     passes['recipient_name'] = passes['pass_recipient'].map(name_mapping).fillna(passes['pass_recipient'].apply(clean_name))
-    
     nodes = passes.groupby('player_name').agg({'x': 'mean', 'y': 'mean', 'id': 'count'}).reset_index()
     nodes.rename(columns={'id': 'total_passes'}, inplace=True)
-    
     edges = passes.groupby(['player_name', 'recipient_name']).size().reset_index(name='pass_count')
     edges = edges[edges['pass_count'] >= min_passes] 
-    
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#f4f6f9', line_color='#c7d5cc')
     fig, ax = pitch.draw(figsize=(8, 6))
-    
     for i, row in edges.iterrows():
         passer = nodes[nodes['player_name'] == row['player_name']]
         recipient = nodes[nodes['player_name'] == row['recipient_name']]
@@ -331,7 +275,6 @@ def draw_passing_network(df_events, team_name, lineup_df, min_passes=3):
             line_width = (row['pass_count'] / edges['pass_count'].max()) * 6
             alpha = max(0.3, (row['pass_count'] / edges['pass_count'].max()))
             pitch.arrows(x_start, y_start, x_end, y_end, width=line_width, headwidth=3, headlength=4, color='#1e3d59', ax=ax, alpha=alpha)
-
     for i, row in nodes.iterrows():
         marker_size = (row['total_passes'] / nodes['total_passes'].max()) * 600
         pitch.scatter(row['x'], row['y'], s=marker_size, color='#ff6e40', edgecolors='#b33c00', linewidths=2, ax=ax, zorder=2)
@@ -351,8 +294,7 @@ def get_starting_xi_list(df_events, lineup_df, team_name):
             number = number_mapping.get(raw_name, p.get('jersey_number', '-'))
             starters.append({'number': int(number) if pd.notna(number) else '-', 'name': disp_name})
         return starters
-    except Exception as e:
-        return []
+    except: return []
 
 def generate_xi_html(starters):
     html = """
@@ -364,47 +306,44 @@ def generate_xi_html(starters):
     html += "</div>"
     return html
 
+# PRZYWRÓCONA W 100% STARA, BOGATA WERSJA TACTICAL INSIGHTS!
 def get_key_insights_html(df_events, team_name, lineup_df):
     try:
         name_mapping = get_display_name_mapping(lineup_df)
         passes = df_events[(df_events['type'] == 'Pass') & (df_events['team'] == team_name)].copy()
         passes = passes[passes['pass_outcome'].isna()] 
         if passes.empty: return ""
-            
         passes['player_name'] = passes['player'].map(name_mapping).fillna(passes['player'].apply(clean_name))
         passes['recipient_name'] = passes['pass_recipient'].map(name_mapping).fillna(passes['pass_recipient'].apply(clean_name))
-        
         top_passer = passes['player_name'].value_counts().index[0]
         top_passer_count = passes['player_name'].value_counts().iloc[0]
         top_recipient = passes['recipient_name'].value_counts().index[0]
         top_recipient_count = passes['recipient_name'].value_counts().iloc[0]
-        
         pairs = passes.groupby(['player_name', 'recipient_name']).size().sort_values(ascending=False)
         top_pair = pairs.index[0]
         top_pair_count = pairs.iloc[0]
         
         html = f"""
-        <div class="insight-container">
-            <div class="insight-header">Tactical Insights</div>
-            <div class="insight-item"><strong>Main Hub:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_passer}</span> ({top_passer_count} p)</div>
-            <div class="insight-item"><strong>Outlet:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_recipient}</span> ({top_recipient_count} rec)</div>
-            <div class="insight-item"><strong>Strongest Link:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_pair[0]} ➔ {top_pair[1]}</span></div>
+        <div style='width: 100%; margin: 10px auto 30px auto; background-color: #ffffff; border-left: 4px solid #ff6e40; border-top: 1px solid #e0e4ec; border-right: 1px solid #e0e4ec; border-bottom: 1px solid #e0e4ec; border-radius: 0 8px 8px 0; padding: 15px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); box-sizing: border-box;'>
+            <h5 style='margin-top: 0; margin-bottom: 12px; color: #111; font-family: sans-serif; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;'>Tactical Insights <span style="font-size: 0.7rem; color: #888; text-transform: none;">(Full Match)</span></h5>
+            <div style='color: #444; font-family: sans-serif; font-size: 0.85rem; line-height: 1.6;'>
+                <div style='margin-bottom: 8px;'><strong>Main Hub:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_passer}</span> ({top_passer_count} passes) <br><em style='color: #888; font-size: 0.75rem;'>Target for man-marking.</em></div>
+                <div style='margin-bottom: 8px;'><strong>Primary Outlet:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_recipient}</span> ({top_recipient_count} received) <br><em style='color: #888; font-size: 0.75rem;'>Key progression target.</em></div>
+                <div><strong>Strongest Link:</strong> <span style='color: #ff6e40; font-weight: bold;'>{top_pair[0]} ➔ {top_pair[1]}</span> ({top_pair_count} times) <br><em style='color: #888; font-size: 0.75rem;'>Prime pressing trigger.</em></div>
+            </div>
         </div>
         """
         return html
-    except Exception as e:
-        return ""
+    except: return ""
 
 def draw_progressive_passes(df_events, team_name):
     passes = df_events[(df_events['type'] == 'Pass') & (df_events['team'] == team_name)].copy()
     passes = passes[passes['pass_outcome'].isna()] 
     if passes.empty or 'pass_end_location' not in passes.columns: return None
-
     passes[['x', 'y']] = pd.DataFrame(passes['location'].tolist(), index=passes.index)
     passes[['end_x', 'end_y']] = pd.DataFrame(passes['pass_end_location'].tolist(), index=passes.index)
     final_third_entries = passes[(passes['x'] < 80) & (passes['end_x'] >= 80)]
     if final_third_entries.empty: return None
-
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#f4f6f9', line_color='#c7d5cc')
     fig, ax = pitch.draw(figsize=(8, 6))
     pitch.arrows(final_third_entries['x'], final_third_entries['y'], final_third_entries['end_x'], final_third_entries['end_y'], width=2, headwidth=4, headlength=4, color='#3498db', ax=ax, alpha=0.6)
@@ -415,13 +354,10 @@ def draw_turnover_map(df_events, team_name):
     turnovers = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(['Dispossessed', 'Miscontrol']))].copy()
     if turnovers.empty: return None
     turnovers[['x', 'y']] = pd.DataFrame(turnovers['location'].tolist(), index=turnovers.index)
-
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#f4f6f9', line_color='#c7d5cc')
     fig, ax = pitch.draw(figsize=(8, 6))
-    try:
-        pitch.kdeplot(turnovers['x'], turnovers['y'], ax=ax, fill=True, cmap='Reds', alpha=0.6, levels=100, zorder=1)
-    except:
-        pitch.hexbin(turnovers['x'], turnovers['y'], ax=ax, edgecolors='#f4f6f9', gridsize=(8, 8), cmap='Reds', alpha=0.7, zorder=1)
+    try: pitch.kdeplot(turnovers['x'], turnovers['y'], ax=ax, fill=True, cmap='Reds', alpha=0.6, levels=100, zorder=1)
+    except: pitch.hexbin(turnovers['x'], turnovers['y'], ax=ax, edgecolors='#f4f6f9', gridsize=(8, 8), cmap='Reds', alpha=0.7, zorder=1)
     pitch.scatter(turnovers['x'], turnovers['y'], color='#c0392b', edgecolors='#fff', linewidth=1, s=60, ax=ax, alpha=0.9, zorder=2)
     return fig
 
@@ -429,19 +365,11 @@ def get_action_zones_html(df_events, team_name):
     events = df_events[(df_events['team'] == team_name) & (df_events['location'].notna())].copy()
     if events.empty: return ""
     events['x'] = events['location'].apply(lambda loc: loc[0] if isinstance(loc, list) and len(loc) > 0 else 0)
-    
-    def_third = len(events[events['x'] < 40])
-    mid_third = len(events[(events['x'] >= 40) & (events['x'] <= 80)])
-    att_third = len(events[events['x'] > 80])
-    
+    def_third = len(events[events['x'] < 40]); mid_third = len(events[(events['x'] >= 40) & (events['x'] <= 80)]); att_third = len(events[events['x'] > 80])
     total = def_third + mid_third + att_third
     if total == 0: return ""
-    
-    p_def = int(def_third/total * 100)
-    p_mid = int(mid_third/total * 100)
-    p_att = 100 - p_def - p_mid
-    
-    html = f"""
+    p_def = int(def_third/total * 100); p_mid = int(mid_third/total * 100); p_att = 100 - p_def - p_mid
+    return f"""
     <div class="zones-container">
         <div class="zones-header">
             <span>Own Third ({p_def}%)</span>
@@ -455,20 +383,16 @@ def get_action_zones_html(df_events, team_name):
         </div>
     </div>
     """
-    return html
 
 def draw_defensive_actions_map(df_events, team_name):
     def_types = ['Tackle', 'Interception', 'Block', 'Ball Recovery', 'Duel']
     def_events = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(def_types))].copy()
     if def_events.empty: return None
-    
     def_events[['x', 'y']] = pd.DataFrame(def_events['location'].tolist(), index=def_events.index)
     pitch = Pitch(pitch_type='statsbomb', pitch_color='#f4f6f9', line_color='#c7d5cc')
     fig, ax = pitch.draw(figsize=(8, 6))
-    try:
-        pitch.kdeplot(def_events['x'], def_events['y'], ax=ax, fill=True, cmap='Blues', alpha=0.6, levels=100, zorder=1)
-    except:
-        pitch.hexbin(def_events['x'], def_events['y'], ax=ax, edgecolors='#f4f6f9', gridsize=(8, 8), cmap='Blues', alpha=0.7, zorder=1)
+    try: pitch.kdeplot(def_events['x'], def_events['y'], ax=ax, fill=True, cmap='Blues', alpha=0.6, levels=100, zorder=1)
+    except: pitch.hexbin(def_events['x'], def_events['y'], ax=ax, edgecolors='#f4f6f9', gridsize=(8, 8), cmap='Blues', alpha=0.7, zorder=1)
     pitch.scatter(def_events['x'], def_events['y'], color='#2980b9', edgecolors='#fff', linewidth=1, s=40, ax=ax, alpha=0.8, zorder=2)
     return fig
 
@@ -477,48 +401,33 @@ def get_ppda_html(df_events, team_name, opponent_name):
         opp_passes = df_events[(df_events['team'] == opponent_name) & (df_events['type'] == 'Pass')].copy()
         opp_passes['x'] = opp_passes['location'].apply(lambda loc: loc[0] if isinstance(loc, list) else 0)
         opp_passes_count = len(opp_passes[opp_passes['x'] <= 80])
-        
         def_types = ['Tackle', 'Interception', 'Block', 'Foul Committed', 'Duel']
         our_def = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(def_types))].copy()
         our_def['x'] = our_def['location'].apply(lambda loc: loc[0] if isinstance(loc, list) else 0)
         our_def_count = len(our_def[our_def['x'] >= 40])
-        
         if our_def_count == 0: return ""
         ppda_value = round(opp_passes_count / our_def_count, 1)
-        
-        if ppda_value < 10.0:
-            status = "Aggressive Press"
-            color = "#2ecc71"
-        elif ppda_value <= 14.0:
-            status = "Moderate Press"
-            color = "#f1c40f"
-        else:
-            status = "Passive Block"
-            color = "#95a5a6"
-            
-        html = f"""
+        if ppda_value < 10.0: status = "Aggressive Press"; color = "#2ecc71"
+        elif ppda_value <= 14.0: status = "Moderate Press"; color = "#f1c40f"
+        else: status = "Passive Block"; color = "#95a5a6"
+        return f"""
         <div class="ppda-container">
             <div class="ppda-header">PPDA Pressing Intensity</div>
             <div class="ppda-val">{ppda_value}</div>
             <div class="ppda-desc">Opponent passes / def. action</div>
-            <span style='background: {color}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: bold;'>{status}</span>
+            <span style='background: {color}; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;'>{status}</span>
         </div>
         """
-        return html
-    except:
-        return ""
+    except: return ""
 
 def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, template_idx=0):
     try:
         name_mapping = get_display_name_mapping(lineup_df)
-        
         passes = df_events[(df_events['type'] == 'Pass') & (df_events['team'] == team_name) & (df_events['pass_outcome'].isna())].copy()
         if not passes.empty:
             passes['player_name'] = passes['player'].map(name_mapping).fillna(passes['player'].apply(clean_name))
             top_passer = passes['player_name'].value_counts().index[0]
-        else:
-            top_passer = "their key playmaker"
-
+        else: top_passer = "their key playmaker"
         if not passes.empty and 'pass_end_location' in passes.columns:
             passes[['end_x', 'end_y']] = pd.DataFrame(passes['pass_end_location'].tolist(), index=passes.index)
             final_third = passes[passes['end_x'] >= 80]
@@ -529,7 +438,6 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
                 else: wing = "central areas"
             else: wing = "central areas"
         else: wing = "central areas"
-            
         turnovers = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(['Dispossessed', 'Miscontrol']))].copy()
         if not turnovers.empty:
             turnovers['x'] = turnovers['location'].apply(lambda loc: loc[0])
@@ -538,26 +446,20 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
             elif avg_x > 80: vul_zone = "the attacking third"
             else: vul_zone = "the midfield sector"
         else: vul_zone = "the midfield sector"
-            
         try:
             opp_passes = df_events[(df_events['team'] == opponent_name) & (df_events['type'] == 'Pass')].copy()
             opp_passes['x'] = opp_passes['location'].apply(lambda loc: loc[0] if isinstance(loc, list) else 0)
             opp_passes_count = len(opp_passes[opp_passes['x'] <= 80])
-            
             def_types = ['Tackle', 'Interception', 'Block', 'Foul Committed', 'Duel']
             our_def = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(def_types))].copy()
             our_def['x'] = our_def['location'].apply(lambda loc: loc[0] if isinstance(loc, list) else 0)
             our_def_count = len(our_def[our_def['x'] >= 40])
-            
             ppda_value = round(opp_passes_count / our_def_count, 1) if our_def_count > 0 else 15.0
-            
             if ppda_value < 10.0: press_style = "an aggressive, high-intensity pressing scheme"
             elif ppda_value <= 14.0: press_style = "a moderate, trigger-based pressing system"
             else: press_style = "a passive, low-block defensive structure"
         except:
-            ppda_value = "N/A"
-            press_style = "a balanced defensive structure"
-
+            ppda_value = "N/A"; press_style = "a balanced defensive structure"
         if template_idx == 0:
             para1 = f"The build-up phase is heavily dictated by <strong>{top_passer}</strong>, who acts as the primary connective tissue for ball progression. When transitioning into the final attacking third, {team_name} shows a clear structural bias, predominantly overloading the <strong>{wing}</strong> to create goal-scoring opportunities."
             para2 = f"Defensively, the team operates with <strong>{press_style}</strong> (PPDA: {ppda_value}). However, under sustained opposition pressure, their technical structure tends to fracture, with the highest concentration of dispossessions and miscontrols occurring in <strong>{vul_zone}</strong>."
@@ -566,8 +468,7 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
             para1 = f"In possession, {team_name} routes the majority of their play through <strong>{top_passer}</strong>. Their attacking geometry is highly asymmetrical, as they consistently look to exploit the <strong>{wing}</strong> when penetrating the opposition's defensive block."
             para2 = f"Without the ball, they deploy <strong>{press_style}</strong>, reflected in a PPDA of {ppda_value}. Despite this, their build-up is prone to collapsing under aggressive pressing, giving up possession most frequently in <strong>{vul_zone}</strong>."
             para3 = f"The optimal counter-strategy involves isolating <strong>{top_passer}</strong> out of the game while heavily shifting the defensive shape to cover the <strong>{wing}</strong>. Pressing triggers should be activated immediately whenever the ball enters <strong>{vul_zone}</strong>."
-
-        html = f"""
+        return f"""
         <div class="dossier-container">
             <div class="dossier-title">Post-Match Tactical Dossier</div>
             <div class="dossier-subtitle">1. In Possession (Build-up & Attack)</div>
@@ -580,9 +481,7 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
             </div>
         </div>
         """
-        return html
-    except Exception as e:
-        return ""
+    except Exception as e: return ""
 
 # =====================================================================
 # SYSTEM ROUTINGU & URL SYNC
@@ -617,8 +516,7 @@ if "match_id" not in st.query_params:
         if "comp_id" in st.query_params:
             try:
                 c_row = df_comps[df_comps['competition_id'] == saved_comp_id]
-                if not c_row.empty and c_row.iloc[0]['competition_name'] in unique_comps:
-                    default_comp_idx = unique_comps.index(c_row.iloc[0]['competition_name'])
+                if not c_row.empty and c_row.iloc[0]['competition_name'] in unique_comps: default_comp_idx = unique_comps.index(c_row.iloc[0]['competition_name'])
             except: pass
         selected_comp = st.selectbox("Select competition:", unique_comps, index=default_comp_idx)
 
@@ -630,8 +528,7 @@ if "match_id" not in st.query_params:
         if "season_id" in st.query_params:
             try:
                 s_row = comp_filtered[comp_filtered['season_id'] == saved_season_id]
-                if not s_row.empty and s_row.iloc[0]['season_name'] in unique_seasons:
-                    default_season_idx = unique_seasons.index(s_row.iloc[0]['season_name'])
+                if not s_row.empty and s_row.iloc[0]['season_name'] in unique_seasons: default_season_idx = unique_seasons.index(s_row.iloc[0]['season_name'])
             except: pass
         selected_season = st.selectbox("Select season:", unique_seasons, index=default_season_idx)
 
@@ -642,46 +539,36 @@ if "match_id" not in st.query_params:
     with col3:
         all_teams = ["All Teams"] + sorted(list(set(df_matches['home_team']).union(set(df_matches['away_team']))))
         default_team_idx = 0
-        if saved_team and saved_team in all_teams:
-            default_team_idx = all_teams.index(saved_team)
+        if saved_team and saved_team in all_teams: default_team_idx = all_teams.index(saved_team)
         selected_team = st.selectbox("Select team (Opponent):", all_teams, index=default_team_idx)
 
     st.divider()
     
-    if selected_team == "All Teams":
-        st.subheader(f"All matches in the {selected_season} season")
-        team_matches = df_matches
-    else:
-        st.subheader(f"Matches for {selected_team} in the {selected_season} season")
-        team_matches = df_matches[(df_matches['home_team'] == selected_team) | (df_matches['away_team'] == selected_team)]
+    if selected_team == "All Teams": st.subheader(f"All matches in the {selected_season} season")
+    else: st.subheader(f"Matches for {selected_team} in the {selected_season} season")
+        
+    if selected_team == "All Teams": team_matches = df_matches
+    else: team_matches = df_matches[(df_matches['home_team'] == selected_team) | (df_matches['away_team'] == selected_team)]
         
     display_df = team_matches.sort_values('match_date').drop_duplicates(subset=['match_id']).reset_index(drop=True)
     
     for index, row in display_df.iterrows():
         date_obj = pd.to_datetime(row['match_date'])
         formatted_date = date_obj.strftime('%d.%m.%Y')
-
         home_logo_url = logo_dict.get(row['home_team'], default_logo)
         away_logo_url = logo_dict.get(row['away_team'], default_logo)
 
         home_color, away_color = "rgba(0,0,0,0)", "rgba(0,0,0,0)"
         green, red, blue = "rgba(46, 204, 113, 0.2)", "rgba(231, 76, 60, 0.2)", "rgba(52, 152, 219, 0.2)"
-
-        if row['home_score'] > row['away_score']:
-            home_color = green; away_color = red
-        elif row['home_score'] < row['away_score']:
-            home_color = red; away_color = green
-        else:
-            home_color = blue; away_color = blue
+        if row['home_score'] > row['away_score']: home_color = green; away_color = red
+        elif row['home_score'] < row['away_score']: home_color = red; away_color = green
+        else: home_color = blue; away_color = blue
 
         card_html = f"""
         <div class="classic-match-card" style="background: linear-gradient(90deg, {home_color} 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, {away_color} 100%);">
             <div class="mc-logo"><img src="{home_logo_url}"></div>
             <div class="mc-team-home"><h4>{row['home_team']}</h4></div>
-            <div class="mc-score">
-                <small>{formatted_date}</small>
-                <h3>{row['home_score']} : {row['away_score']}</h3>
-            </div>
+            <div class="mc-score"><small>{formatted_date}</small><h3>{row['home_score']} : {row['away_score']}</h3></div>
             <div class="mc-team-away"><h4>{row['away_team']}</h4></div>
             <div class="mc-logo"><img src="{away_logo_url}"></div>
         </div>
@@ -689,10 +576,7 @@ if "match_id" not in st.query_params:
         
         st.markdown(card_html, unsafe_allow_html=True)
         if st.button("Analyze", key=f"btn_{row['match_id']}", use_container_width=True, type="secondary"):
-            st.query_params["comp_id"] = str(c_id)
-            st.query_params["season_id"] = str(s_id)
-            st.query_params["team"] = selected_team
-            st.query_params["match_id"] = str(row['match_id'])
+            st.query_params["comp_id"] = str(c_id); st.query_params["season_id"] = str(s_id); st.query_params["team"] = selected_team; st.query_params["match_id"] = str(row['match_id'])
             st.rerun()
 
 else:
@@ -706,16 +590,13 @@ else:
     df_matches = load_matches_for_season(c_id, s_id)
     match = df_matches[df_matches['match_id'] == m_id].iloc[0]
     date_obj = pd.to_datetime(match['match_date'])
-
     home_logo = logo_dict.get(match['home_team'], default_logo)
     away_logo = logo_dict.get(match['away_team'], default_logo)
 
     header_html = f"""
     <div class="fixed-match-header">
         <div class="fixed-header-content">
-            <div class="team-block" style="flex: 1; text-align: right; display: flex; justify-content: flex-end;">
-                <h3 class="hide-mobile team-name-header" style="margin: 0; font-family: sans-serif; font-weight: 600; color: #111111;">{match['home_team']}</h3>
-            </div>
+            <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end;"><h3 class="hide-mobile team-name-header" style="margin: 0; font-family: sans-serif; font-weight: 600; color: #111111;">{match['home_team']}</h3></div>
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <img src="{home_logo}" width="38" style="vertical-align: middle;" class="hide-mobile">
@@ -724,22 +605,15 @@ else:
                     </span>
                     <img src="{away_logo}" width="38" style="vertical-align: middle;" class="hide-mobile">
                 </div>
-                <div style="margin-top: 4px;">
-                    <small style="color: #888888; font-family: sans-serif; font-size: 0.75rem;">{date_obj.strftime('%d.%m.%Y')} | ID: {match['match_id']}</small>
-                </div>
+                <div style="margin-top: 4px;"><small style="color: #888888; font-family: sans-serif; font-size: 0.75rem;">{date_obj.strftime('%d.%m.%Y')} | ID: {match['match_id']}</small></div>
             </div>
-            <div class="team-block" style="flex: 1; text-align: left; display: flex; justify-content: flex-start;">
-                <h3 class="hide-mobile team-name-header" style="margin: 0; font-family: sans-serif; font-weight: 600; color: #111111;">{match['away_team']}</h3>
-            </div>
+            <div style="flex: 1; text-align: left; display: flex; justify-content: flex-start;"><h3 class="hide-mobile team-name-header" style="margin: 0; font-family: sans-serif; font-weight: 600; color: #111111;">{match['away_team']}</h3></div>
         </div>
     </div>
     """
     st.markdown(header_html, unsafe_allow_html=True)
-
     st.markdown("<div class='back-btn-container'>", unsafe_allow_html=True)
-    if st.button("← Back to Match List", type="secondary"):
-        st.query_params.clear()
-        st.rerun()
+    if st.button("← Back to Match List", type="secondary"): st.query_params.clear(); st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     with st.spinner("Extracting match events & computing tactical metrics..."):
@@ -811,11 +685,7 @@ else:
         if fig_prog_away: st.pyplot(fig_prog_away, use_container_width=True)
         else: st.info("No final third entries found.")
 
-    st.markdown("""
-<div class='legend-box'>
-<strong>Legend:</strong> Dot = Origin of the pass | Arrow = Destination | <strong>Attacking Direction:</strong> Always Left to Right
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("<div class='legend-box'><strong>Legend:</strong> Dot = Origin of the pass | Arrow = Destination | <strong>Attacking Direction:</strong> Always Left to Right</div>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -836,11 +706,7 @@ else:
         if fig_vuln_away: st.pyplot(fig_vuln_away, use_container_width=True)
         else: st.info("No turnover data found.")
 
-    st.markdown("""
-<div class='legend-box'>
-<strong>Legend:</strong> Red Dot = Single ball loss (Dispossessed/Miscontrol) | Heatmap = High-density turnover zones | <strong>Attacking Direction:</strong> Always Left to Right
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("<div class='legend-box'><strong>Legend:</strong> Red Dot = Single ball loss (Dispossessed/Miscontrol) | Heatmap = High-density turnover zones | <strong>Attacking Direction:</strong> Always Left to Right</div>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -861,11 +727,7 @@ else:
         if fig_def_away: st.pyplot(fig_def_away, use_container_width=True)
         else: st.info("No defensive data found.")
 
-    st.markdown("""
-<div class='legend-box'>
-<strong>Legend:</strong> Blue Dot = Successful Defensive Action | Heatmap = High-density pressing zones | <strong>Attacking Direction:</strong> Always Left to Right
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("<div class='legend-box'><strong>Legend:</strong> Blue Dot = Successful Defensive Action | Heatmap = High-density pressing zones | <strong>Attacking Direction:</strong> Always Left to Right</div>", unsafe_allow_html=True)
 
     col_ppda1, col_ppda2 = st.columns(2)
     with col_ppda1:
