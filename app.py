@@ -38,7 +38,7 @@ logo_dict = {
     "Villarreal": "https://images.fotmob.com/image_resources/logo/teamlogo/10205.png",
     "Real Betis": "https://images.fotmob.com/image_resources/logo/teamlogo/8603.png",
     "Athletic Club": "https://images.fotmob.com/image_resources/logo/teamlogo/8315.png",
-    "Celta Vigo": "https://upload.wikimedia.org/wikipedia/en/thumb/1/12/RC_Celta_de_Vigo_logo.svg/200px-RC_Celta_de_Vigo_logo.svg.png",
+   "Celta Vigo": "https://images.fotmob.com/image_resources/logo/teamlogo/9910.png",
     "Valencia": "https://images.fotmob.com/image_resources/logo/teamlogo/10267.png",
     "Osasuna": "https://images.fotmob.com/image_resources/logo/teamlogo/9783.png",
     "Getafe": "https://images.fotmob.com/image_resources/logo/teamlogo/8305.png",
