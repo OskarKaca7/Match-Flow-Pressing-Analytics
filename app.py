@@ -844,7 +844,7 @@ else:
     # THE TACTICAL DOSSIER
     # ---------------------------------------------------------------------
     st.subheader("5. Post-Match Tactical Dossier")
-    st.markdown("Comprehensive AI-generated scouting report based on spatial and event data analysis.")
+    st.markdown("Comprehensive scouting report based on spatial and event data analysis.")
     
     col_dos1, col_dos2 = st.columns(2)
     with col_dos1:
