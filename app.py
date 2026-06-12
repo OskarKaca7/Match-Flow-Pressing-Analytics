@@ -475,16 +475,29 @@ def get_tactical_dossier_html(df_events, team_name, opponent_name, lineup_df, te
         else:
             top_passer = "their key playmaker"
 
+        # NOWA, KULOODPORNA LOGIKA - Po prostu bierzemy to, czego jest najwięcej.
         if not passes.empty and 'pass_end_location' in passes.columns:
             passes[['end_x', 'end_y']] = pd.DataFrame(passes['pass_end_location'].tolist(), index=passes.index)
             final_third = passes[passes['end_x'] >= 80]
+            
             if not final_third.empty:
-                avg_y = final_third['end_y'].mean()
-                if avg_y < 26.6: wing = "left wing"
-                elif avg_y > 53.3: wing = "right wing"
-                else: wing = "central areas"
-            else: wing = "central areas"
-        else: wing = "central areas"
+                left_count = (final_third['end_y'] < 26.6).sum()
+                center_count = ((final_third['end_y'] >= 26.6) & (final_third['end_y'] <= 53.3)).sum()
+                right_count = (final_third['end_y'] > 53.3).sum()
+                
+                # Proste znalezienie strefy z maksymalną liczbą podań
+                max_count = max(left_count, center_count, right_count)
+                
+                if max_count == left_count:
+                    wing = "left wing"
+                elif max_count == right_count:
+                    wing = "right wing"
+                else:
+                    wing = "central areas"
+            else: 
+                wing = "central areas"
+        else: 
+            wing = "central areas"
             
         turnovers = df_events[(df_events['team'] == team_name) & (df_events['type'].isin(['Dispossessed', 'Miscontrol']))].copy()
         if not turnovers.empty:
@@ -844,7 +857,7 @@ else:
     # THE TACTICAL DOSSIER
     # ---------------------------------------------------------------------
     st.subheader("5. Post-Match Tactical Dossier")
-    st.markdown("Comprehensive scouting report based on spatial and event data analysis.")
+    st.markdown("Comprehensive AI-generated scouting report based on spatial and event data analysis.")
     
     col_dos1, col_dos2 = st.columns(2)
     with col_dos1:
