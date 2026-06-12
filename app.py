@@ -150,7 +150,7 @@ logo_dict = {
     "Getafe": "https://images.fotmob.com/image_resources/logo/teamlogo/8305.png",
     "Deportivo Alavés": "https://images.fotmob.com/image_resources/logo/teamlogo/9866.png",
     "Levante UD": "https://images.fotmob.com/image_resources/logo/teamlogo/8581.png",
-    "Granada": "https://images.fotmob.com/image_resources/logo/teamlogo/9867.png",
+    "Granada": "https://images.fotmob.com/image_resources/logo/teamlogo/7878.png",
     "Cádiz": "https://images.fotmob.com/image_resources/logo/teamlogo/8385.png",
     "Elche": "https://images.fotmob.com/image_resources/logo/teamlogo/10268.png",
     "Real Valladolid": "https://images.fotmob.com/image_resources/logo/teamlogo/10281.png",
